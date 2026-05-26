@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Karate Kata - TCN Frame Viewer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #07090f;
+        --surface: #0d1018;
+        --surface2: #141720;
+        --border: rgba(255, 255, 255, 0.07);
+        --border2: rgba(255, 255, 255, 0.13);
+        --txt: #dde1ee;
+        --txt2: #6b7094;
+        --txt3: #3d4260;
+        --purple50: #2a1f5c;
+        --purpleHi: #a78bfa;
+        --purpleTxt: #ede9fe;
+        --blue50: #162040;
+        --blueHi: #60a5fa;
+        --blueTxt: #dbeafe;
+        --teal50: #0d2b28;
+        --tealHi: #2dd4bf;
+        --tealTxt: #ccfbf1;
+        --amber50: #2a1b00;
+        --amberHi: #fbbf24;
+        --amberTxt: #fef3c7;
+        --red: #ef4444;
+        --mono: "JetBrains Mono", monospace;
+        --sans: "Syne", sans-serif;
+        --radius: 6px;
+      }
+
+      body {
+        font-family: var(--mono);
+        background: var(--bg);
+        color: var(--txt);
+        min-height: 100vh;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px
+          );
+        background-size: 48px 48px;
+      }
+
+      /* ── Header ── */
+      header {
+        border-bottom: 1px solid var(--border);
+        padding: 0 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 56px;
+        background: rgba(7, 9, 15, 0.9);
+        backdrop-filter: blur(8px);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      .logo {
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 0.02em;
+        color: var(--txt);
+      }
+
+      .logo span {
+        color: var(--purpleHi);
+      }
+
+      .badge {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--txt2);
+        border: 1px solid var(--border2);
+        border-radius: 4px;
+        padding: 3px 8px;
+      }
+
+      /* ── Main layout ── */
+      main {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 2.5rem 2rem 4rem;
+      }
+
+      /* ── Hero ── */
+      .hero {
+        margin-bottom: 2.5rem;
+      }
+
+      .hero h1 {
+        font-family: var(--sans);
+        font-size: clamp(22px, 4vw, 32px);
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 0.75rem;
+      }
+
+      .hero h1 em {
+        font-style: normal;
+        color: var(--purpleHi);
+      }
+
+      .hero p {
+        font-size: 13px;
+        color: var(--txt2);
+        line-height: 1.7;
+        max-width: 560px;
+      }
+
+      /* ── Card ── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      /* ── Slider section ── */
+      .slider-wrap {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .slider-label {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--txt2);
+        white-space: nowrap;
+      }
+
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        flex: 1;
+        height: 3px;
+        background: var(--surface2);
+        border-radius: 2px;
+        outline: none;
+        cursor: pointer;
+        border: 1px solid var(--border2);
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--purpleHi);
+        border: 2px solid var(--bg);
+        box-shadow: 0 0 0 1px var(--purpleHi);
+        cursor: pointer;
+        transition: transform 0.1s;
+      }
+
+      input[type="range"]::-webkit-slider-thumb:active {
+        transform: scale(1.2);
+      }
+
+      .t-display {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--purpleHi);
+        min-width: 44px;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      /* ── Legend ── */
+      .legend {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .leg-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: var(--txt2);
+      }
+
+      .leg-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        flex-shrink: 0;
+      }
+
+      /* ── Layer rows ── */
+      .layer-row {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 6px;
+        gap: 0;
+      }
+
+      .layer-label {
+        width: 120px;
+        flex-shrink: 0;
+        padding-top: 9px;
+      }
+
+      .layer-label .name {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--txt);
+        display: block;
+      }
+
+      .layer-label .sub {
+        font-size: 10px;
+        color: var(--txt3);
+        display: block;
+        margin-top: 2px;
+      }
+
+      .cells {
+        display: flex;
+        gap: 4px;
+        flex-shrink: 0;
+        overflow-x: auto;
+      }
+
+      .cell {
+        width: 34px;
+        height: 34px;
+        border-radius: var(--radius);
+        border: 1px solid var(--border2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--txt2);
+        cursor: pointer;
+        transition:
+          background 0.12s,
+          border-color 0.12s,
+          color 0.12s,
+          transform 0.08s;
+        flex-shrink: 0;
+        user-select: none;
+      }
+
+      .cell:hover {
+        border-color: var(--border2);
+        transform: translateY(-1px);
+      }
+
+      .cell.sel {
+        background: var(--purple50);
+        border-color: var(--purpleHi);
+        color: var(--purpleTxt);
+        font-weight: 600;
+        box-shadow: 0 0 10px rgba(167, 139, 250, 0.25);
+      }
+
+      .cell.l1d {
+        background: var(--blue50);
+        border-color: var(--blueHi);
+        color: var(--blueTxt);
+      }
+
+      .cell.ind {
+        background: var(--teal50);
+        border-color: var(--tealHi);
+        color: var(--tealTxt);
+      }
+
+      .cell.skp {
+        border-style: dashed;
+        border-color: var(--border2);
+        color: var(--txt3);
+        opacity: 0.6;
+      }
+
+      .more {
+        font-size: 10px;
+        color: var(--txt3);
+        align-self: center;
+        margin-left: 6px;
+        padding-top: 9px;
+        white-space: nowrap;
+      }
+
+      .arrow-note {
+        margin-left: 120px;
+        font-size: 10px;
+        color: var(--txt3);
+        margin: 4px 0 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .arrow-note::before {
+        content: "";
+        display: inline-block;
+        width: 1px;
+        height: 16px;
+        background: var(--border2);
+        margin-right: 2px;
+        flex-shrink: 0;
+      }
+
+      /* ── GAP output row ── */
+      .gap-bar {
+        height: 34px;
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 500;
+        border: 1px solid var(--border2);
+        color: var(--txt2);
+        padding: 0 16px;
+        transition:
+          background 0.12s,
+          border-color 0.12s,
+          color 0.12s,
+          box-shadow 0.12s;
+        white-space: nowrap;
+      }
+
+      .gap-bar.on {
+        background: var(--amber50);
+        border-color: var(--amberHi);
+        color: var(--amberTxt);
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+      }
+
+      .gap-label {
+        font-size: 11px;
+        color: var(--txt2);
+        margin-left: 10px;
+        white-space: nowrap;
+      }
+
+      /* ── Info panel ── */
+      .info-panel {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.25rem 1.5rem;
+        margin-top: 1.25rem;
+      }
+
+      .info-title {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--txt2);
+        margin-bottom: 1rem;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+      }
+
+      .info-item .lbl {
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--txt3);
+        margin-bottom: 4px;
+      }
+
+      .info-item .val {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--txt);
+      }
+
+      .info-item .val.ok {
+        color: var(--tealHi);
+      }
+
+      .info-item .val.hi {
+        color: var(--purpleHi);
+      }
+
+      /* ── Architecture reference ── */
+      .arch {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 1.5rem;
+      }
+
+      .arch-item {
+        background: var(--surface);
+        padding: 1rem 1.25rem;
+      }
+
+      .arch-item .step {
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--txt3);
+        margin-bottom: 6px;
+      }
+
+      .arch-item .title {
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--txt);
+        margin-bottom: 4px;
+      }
+
+      .arch-item .detail {
+        font-size: 11px;
+        color: var(--txt2);
+        line-height: 1.6;
+      }
+
+      .arch-item .tag {
+        display: inline-block;
+        margin-top: 6px;
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 3px;
+        border: 1px solid var(--border2);
+        color: var(--txt3);
+      }
+
+      footer {
+        text-align: center;
+        padding: 2rem;
+        font-size: 11px;
+        color: var(--txt3);
+        border-top: 1px solid var(--border);
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div class="logo">Karate Kata - <span>TCN Frame Viewer</span></div>
+      <div class="badge">Viona Z. A. Kaleb</div>
+    </header>
+
+    <main>
+      <div class="hero">
+        <h1>How the <em>TCN encoder</em> reads each frame</h1>
+        <p>
+          Drag the slider to select any output frame and see exactly which input
+          frames contribute to it — through two causal convolutional layers with
+          increasing dilation.
+        </p>
+      </div>
+
+      <div class="card">
+        <!-- Slider -->
+        <div class="slider-wrap">
+          <span class="slider-label">Output frame</span>
+          <input
+            type="range"
+            min="0"
+            max="13"
+            value="9"
+            id="fs"
+            oninput="go(+this.value)"
+          />
+          <span class="t-display" id="fl">t = 9</span>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+          <div class="leg-item">
+            <div
+              class="leg-dot"
+              style="
+                background: var(--purple50);
+                border: 1px solid var(--purpleHi);
+              "
+            ></div>
+            Selected output
+          </div>
+          <div class="leg-item">
+            <div
+              class="leg-dot"
+              style="background: var(--blue50); border: 1px solid var(--blueHi)"
+            ></div>
+            L1 taps (d=2 dilation)
+          </div>
+          <div class="leg-item">
+            <div
+              class="leg-dot"
+              style="background: var(--teal50); border: 1px solid var(--tealHi)"
+            ></div>
+            Input frames used
+          </div>
+          <div class="leg-item">
+            <div
+              class="leg-dot"
+              style="
+                background: transparent;
+                border: 1px dashed var(--border2);
+                opacity: 0.6;
+              "
+            ></div>
+            Skipped by dilation
+          </div>
+        </div>
+
+        <!-- Input row -->
+        <div class="layer-row">
+          <div class="layer-label">
+            <span class="name">Input frames</span>
+            <span class="sub">45 × 132-D</span>
+          </div>
+          <div class="cells" id="inpRow"></div>
+          <span class="more">…+31</span>
+        </div>
+
+        <div class="arrow-note">
+          Conv1D(32, k=3, d=1) · causal · ReLU — reads t, t−1, t−2
+        </div>
+
+        <!-- Layer 1 row -->
+        <div class="layer-row">
+          <div class="layer-label">
+            <span class="name">After layer 1</span>
+            <span class="sub">45 × 32-D</span>
+          </div>
+          <div class="cells" id="l1Row"></div>
+          <span class="more">…+31</span>
+        </div>
+
+        <div class="arrow-note">
+          Conv1D(32, k=3, d=2) · causal · ReLU · Dropout 0.2 — reads t, t−2, t−4
+        </div>
+
+        <!-- Layer 2 row -->
+        <div class="layer-row">
+          <div class="layer-label">
+            <span class="name">After layer 2</span>
+            <span class="sub">45 × 32-D</span>
+          </div>
+          <div class="cells" id="l2Row"></div>
+          <span class="more">…+31</span>
+        </div>
+
+        <div class="arrow-note">
+          GlobalAveragePooling — mean across all 45 time steps
+        </div>
+
+        <!-- GAP output row -->
+        <div class="layer-row">
+          <div class="layer-label">
+            <span class="name">32-D embedding</span>
+            <span class="sub">sequence-level</span>
+          </div>
+          <div style="display: flex; align-items: center">
+            <div class="gap-bar" id="gbar">32-D vector</div>
+            <span class="gap-label">→ kata head · correctness head</span>
+          </div>
+        </div>
+
+        <!-- Info panel -->
+        <div class="info-panel">
+          <div class="info-title" id="ititle">Frame t=9 · computation path</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="lbl">L1[t] reads input at</div>
+              <div class="val hi" id="il1"></div>
+            </div>
+            <div class="info-item">
+              <div class="lbl">L2[t] taps L1 at</div>
+              <div class="val" id="il2"></div>
+            </div>
+            <div class="info-item">
+              <div class="lbl">Unique input frames</div>
+              <div class="val" id="irf"></div>
+            </div>
+            <div class="info-item">
+              <div class="lbl">Causal — no future data</div>
+              <div class="val ok" id="ical">✓ past only</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Architecture reference -->
+      <div class="arch">
+        <div class="arch-item">
+          <div class="step">Step 1</div>
+          <div class="title">Pose extraction</div>
+          <div class="detail">
+            MoveNet Lightning detects 17 keypoints per frame at 192×192. Each
+            keypoint has y, x, and a confidence score.
+          </div>
+          <span class="tag">51-D raw → 132-D features</span>
+        </div>
+        <div class="arch-item">
+          <div class="step">Step 2</div>
+          <div class="title">Layer 1 · d=1</div>
+          <div class="detail">
+            Causal Conv1D with kernel size 3, dilation 1. Sees 3 consecutive
+            frames. Output: 32 channels per frame.
+          </div>
+          <span class="tag">receptive field: 3 frames</span>
+        </div>
+        <div class="arch-item">
+          <div class="step">Step 3</div>
+          <div class="title">Layer 2 · d=2</div>
+          <div class="detail">
+            Causal Conv1D with kernel size 3, dilation 2. Skips one L1 frame
+            between each tap, expanding coverage cheaply.
+          </div>
+          <span class="tag">receptive field: 7 frames</span>
+        </div>
+        <div class="arch-item">
+          <div class="step">Step 4</div>
+          <div class="title">GlobalAvgPool</div>
+          <div class="detail">
+            Averages the 45 frame-level 32-D vectors into a single fixed-size
+            32-D embedding for the whole sequence.
+          </div>
+          <span class="tag">45 × 32-D → 32-D</span>
+        </div>
+        <div class="arch-item">
+          <div class="step">Step 5</div>
+          <div class="title">Dual heads</div>
+          <div class="detail">
+            Kata head: Dense(4) + softmax → predicted kata 1–4. Correctness
+            head: Dense(1) + sigmoid → P(correct).
+          </div>
+          <span class="tag">32-D → two outputs</span>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p>45-frame sequence · showing frames 0–13 of 45</p>
+    </footer>
+
+    <script>
+      const TN = 14;
+
+      function init() {
+        ["inp", "l1", "l2"].forEach((prefix) => {
+          const row = document.getElementById(prefix + "Row");
+          for (let i = 0; i < TN; i++) {
+            const d = document.createElement("div");
+            d.className = "cell";
+            d.id = prefix + i;
+            d.textContent = i;
+            d.title = "t=" + i;
+            d.onclick = () => {
+              document.getElementById("fs").value = i;
+              go(i);
+            };
+            row.appendChild(d);
+          }
+        });
+      }
+
+      function go(t) {
+        document.getElementById("fl").textContent = "t = " + t;
+
+        for (let i = 0; i < TN; i++) {
+          ["inp", "l1", "l2"].forEach((p) => {
+            const el = document.getElementById(p + i);
+            if (el) el.className = "cell";
+          });
+        }
+
+        // L2[t] reads L1 at t, t-2, t-4 (causal, dilation=2, kernel=3)
+        const l2deps = [t, t - 2, t - 4].filter((x) => x >= 0 && x < TN);
+
+        // L1[x] reads inp at x, x-1, x-2 (causal, dilation=1, kernel=3)
+        const inpSet = new Set();
+        l2deps.forEach((x) => {
+          [x, x - 1, x - 2]
+            .filter((y) => y >= 0 && y < TN)
+            .forEach((y) => inpSet.add(y));
+        });
+
+        inpSet.forEach((i) => {
+          const el = document.getElementById("inp" + i);
+          if (el) el.className = "cell ind";
+        });
+
+        l2deps.forEach((i) => {
+          const el = document.getElementById("l1" + i);
+          if (el) el.className = i === t ? "cell sel" : "cell l1d";
+        });
+
+        // Dilation skipped positions in L1 row
+        [t - 1, t - 3].forEach((i) => {
+          if (i >= 0 && i < TN) {
+            const el = document.getElementById("l1" + i);
+            if (el && el.className === "cell") el.className = "cell skp";
+          }
+        });
+
+        const l2el = document.getElementById("l2" + t);
+        if (l2el) l2el.className = "cell sel";
+
+        document.getElementById("gbar").className = "gap-bar on";
+
+        // Info panel
+        document.getElementById("ititle").textContent =
+          "Frame t=" + t + " · computation path";
+        document.getElementById("il1").textContent = [t, t - 1, t - 2]
+          .filter((x) => x >= 0)
+          .map((x) => "t=" + x)
+          .join(", ");
+        document.getElementById("il2").textContent = l2deps
+          .map((x) => "t=" + x)
+          .join(", ");
+
+        const rfArr = [...inpSet].sort((a, b) => a - b);
+        document.getElementById("irf").textContent =
+          rfArr.length +
+          " frame" +
+          (rfArr.length !== 1 ? "s" : "") +
+          " (max 7 at t≥6)";
+
+        document.getElementById("ical").textContent =
+          t === 0 ? "✓ only t=0" : "✓ past only (t=0…" + t + ")";
+      }
+
+      init();
+      go(9);
+    </script>
+  </body>
+</html>

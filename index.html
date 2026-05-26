@@ -100,7 +100,7 @@
 
       /* ── Main layout ── */
       main {
-        max-width: 880px;
+        max-width: 80vw;
         margin: 0 auto;
         padding: 2.5rem 2rem 4rem;
       }
@@ -127,7 +127,6 @@
         font-size: 13px;
         color: var(--txt2);
         line-height: 1.7;
-        max-width: 560px;
       }
 
       /* ── Card ── */
@@ -268,6 +267,12 @@
       }
 
       /* ── Layer rows ── */
+
+      .layer-container {
+        overflow-x: auto;
+        margin-bottom: 1rem;
+      }
+
       .layer-row {
         display: flex;
         align-items: flex-start;
@@ -530,10 +535,10 @@
 
     <main>
       <div class="hero">
-        <h1>How the <em>TCN encoder</em> reads each frame</h1>
+        <h1>How <em>TCN encoder</em> reads each frame</h1>
         <p>
           Drag the slider to select any output frame and see exactly which input
-          frames contribute to it — through two causal convolutional layers with
+          frames contribute through 2 causal convolutional layers with
           increasing dilation.
         </p>
       </div>
@@ -545,7 +550,7 @@
           <input
             type="range"
             min="0"
-            max="13"
+            max="45"
             value="9"
             id="fs"
             oninput="go(+this.value)"
@@ -625,42 +630,45 @@
           </div>
         </div>
 
-        <!-- Input row -->
-        <div class="layer-row">
-          <div class="layer-label">
-            <span class="name">Input frames</span>
-            <span class="sub">45 × 132-D</span>
+        <div class="layer-container">
+          <!-- Input row -->
+          <div class="layer-row">
+            <div class="layer-label">
+              <span class="name">Input frames</span>
+              <span class="sub">45 × 132-D</span>
+            </div>
+            <div class="cells" id="inpRow"></div>
+            <!-- <span class="more">…+31</span> -->
           </div>
-          <div class="cells" id="inpRow"></div>
-          <span class="more">…+31</span>
-        </div>
 
-        <div class="arrow-note">
-          Conv1D(32, k=3, d=1) · causal · ReLU — reads t, t−1, t−2
-        </div>
-
-        <!-- Layer 1 row -->
-        <div class="layer-row">
-          <div class="layer-label">
-            <span class="name">After layer 1</span>
-            <span class="sub">45 × 32-D</span>
+          <div class="arrow-note">
+            Conv1D(32, k=3, d=1) · causal · ReLU — reads t, t−1, t−2
           </div>
-          <div class="cells" id="l1Row"></div>
-          <span class="more">…+31</span>
-        </div>
 
-        <div class="arrow-note">
-          Conv1D(32, k=3, d=2) · causal · ReLU · Dropout 0.2 — reads t, t−2, t−4
-        </div>
-
-        <!-- Layer 2 row -->
-        <div class="layer-row">
-          <div class="layer-label">
-            <span class="name">After layer 2</span>
-            <span class="sub">45 × 32-D</span>
+          <!-- Layer 1 row -->
+          <div class="layer-row">
+            <div class="layer-label">
+              <span class="name">After layer 1</span>
+              <span class="sub">45 × 32-D</span>
+            </div>
+            <div class="cells" id="l1Row"></div>
+            <!-- <span class="more">…+31</span> -->
           </div>
-          <div class="cells" id="l2Row"></div>
-          <span class="more">…+31</span>
+
+          <div class="arrow-note">
+            Conv1D(32, k=3, d=2) · causal · ReLU · Dropout 0.2 — reads t, t−2,
+            t−4
+          </div>
+
+          <!-- Layer 2 row -->
+          <div class="layer-row">
+            <div class="layer-label">
+              <span class="name">After layer 2</span>
+              <span class="sub">45 × 32-D</span>
+            </div>
+            <div class="cells" id="l2Row"></div>
+            <!-- <span class="more">…+31</span> -->
+          </div>
         </div>
 
         <div class="arrow-note">
@@ -754,11 +762,11 @@
     </main>
 
     <footer>
-      <p>45-frame sequence · showing frames 0–13 of 45</p>
+      <p>45-frame sequence</p>
     </footer>
 
     <script>
-      const TN = 14;
+      const TN = 46;
 
       function init() {
         ["inp", "l1", "l2"].forEach((prefix) => {

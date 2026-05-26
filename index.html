@@ -217,6 +217,56 @@
         flex-shrink: 0;
       }
 
+      /* ── CNN Visualizer ── */
+      .cnn-viewer {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        background: var(--surface2);
+        padding: 1.25rem;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        align-items: center;
+      }
+
+      .cnn-frame {
+        width: 160px;
+        height: 160px;
+        background: var(--bg);
+        border: 1px solid var(--border2);
+        border-radius: 8px;
+        flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .cnn-frame::after {
+        content: "192x192";
+        position: absolute;
+        bottom: 6px;
+        right: 8px;
+        font-size: 9px;
+        color: var(--txt3);
+      }
+
+      .cnn-details {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        width: 100%;
+      }
+
+      .cnn-title {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--purpleHi);
+        grid-column: 1 / -1;
+        margin-bottom: -0.25rem;
+        display: flex;
+        justify-content: space-between;
+      }
+
       /* ── Layer rows ── */
       .layer-row {
         display: flex;
@@ -542,6 +592,39 @@
           </div>
         </div>
 
+        <div class="cnn-viewer">
+          <div class="cnn-frame">
+            <svg
+              id="pose-svg"
+              viewBox="0 0 192 192"
+              width="100%"
+              height="100%"
+            ></svg>
+          </div>
+          <div class="cnn-details">
+            <div class="cnn-title">
+              <span>CNN Pose Extraction (MoveNet)</span>
+              <span id="cnn-time-lbl">t = 9</span>
+            </div>
+            <div class="info-item">
+              <div class="lbl">Detected Keypoints</div>
+              <div class="val hi">17 Spatial Points</div>
+            </div>
+            <div class="info-item">
+              <div class="lbl">Extracted Feature Vector</div>
+              <div class="val ok">132-D Array</div>
+            </div>
+            <div class="info-item">
+              <div class="lbl">Simulated Action</div>
+              <div class="val">Gyaku-tsuki (Strike)</div>
+            </div>
+            <div class="info-item">
+              <div class="lbl">TCN Input Step</div>
+              <div class="val">Flattened frame state</div>
+            </div>
+          </div>
+        </div>
+
         <!-- Input row -->
         <div class="layer-row">
           <div class="layer-label">
@@ -695,8 +778,119 @@
         });
       }
 
+      function drawPose(t) {
+        const svg = document.getElementById("pose-svg");
+        if (!svg) return;
+        svg.innerHTML = "";
+
+        // Calculate progress (0.0 to 1.0) based on selected frame
+        const progress = t / (TN - 1);
+
+        // Simulate keypoints for a Karate strike (Gyaku-tsuki)
+        const nose = [96, 40];
+        const lEye = [90, 36];
+        const rEye = [102, 36];
+        const lEar = [84, 40];
+        const rEar = [108, 40];
+
+        const lShoulder = [70, 70];
+        const rShoulder = [122, 70];
+
+        // Left arm pulling back to hip (hikite)
+        const lElbow = [60 - 10 * progress, 100 + 10 * progress];
+        const lWrist = [50 - 5 * progress, 130 - 20 * progress];
+
+        // Right arm striking forward
+        const rElbow = [122 + 15 * progress, 110 - 20 * progress];
+        const rWrist = [122 + 25 * progress, 150 - 75 * progress];
+
+        const lHip = [80, 130];
+        const rHip = [112, 130];
+
+        // Zenkutsu-dachi (front stance)
+        const lKnee = [70, 160];
+        const lAnkle = [65, 185];
+        const rKnee = [125 + 5 * progress, 160];
+        const rAnkle = [135 + 10 * progress, 185];
+
+        const points = {
+          nose,
+          lEye,
+          rEye,
+          lEar,
+          rEar,
+          lShoulder,
+          rShoulder,
+          lElbow,
+          rElbow,
+          lWrist,
+          rWrist,
+          lHip,
+          rHip,
+          lKnee,
+          rKnee,
+          lAnkle,
+          rAnkle,
+        };
+
+        // MoveNet 17-keypoint connections
+        const connections = [
+          ["lEar", "lEye"],
+          ["lEye", "nose"],
+          ["nose", "rEye"],
+          ["rEye", "rEar"],
+          ["nose", "lShoulder"],
+          ["nose", "rShoulder"],
+          ["lShoulder", "rShoulder"],
+          ["lShoulder", "lElbow"],
+          ["lElbow", "lWrist"],
+          ["rShoulder", "rElbow"],
+          ["rElbow", "rWrist"],
+          ["lShoulder", "lHip"],
+          ["rShoulder", "rHip"],
+          ["lHip", "rHip"],
+          ["lHip", "lKnee"],
+          ["lKnee", "lAnkle"],
+          ["rHip", "rKnee"],
+          ["rKnee", "rAnkle"],
+        ];
+
+        // Render skeleton bones
+        connections.forEach(([p1, p2]) => {
+          const line = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "line",
+          );
+          line.setAttribute("x1", points[p1][0]);
+          line.setAttribute("y1", points[p1][1]);
+          line.setAttribute("x2", points[p2][0]);
+          line.setAttribute("y2", points[p2][1]);
+          line.setAttribute("stroke", "#a78bfa");
+          line.setAttribute("stroke-width", "2.5");
+          line.setAttribute("stroke-linecap", "round");
+          svg.appendChild(line);
+        });
+
+        // Render joints
+        Object.values(points).forEach((pt) => {
+          const circle = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle",
+          );
+          circle.setAttribute("cx", pt[0]);
+          circle.setAttribute("cy", pt[1]);
+          circle.setAttribute("r", "3.5");
+          circle.setAttribute("fill", "#2dd4bf");
+          svg.appendChild(circle);
+        });
+      }
+
       function go(t) {
         document.getElementById("fl").textContent = "t = " + t;
+        document.getElementById("cnn-time-lbl").textContent = "t = " + t;
+
+        // Update the CNN Pose visualizer
+        drawPose(t);
 
         for (let i = 0; i < TN; i++) {
           ["inp", "l1", "l2"].forEach((p) => {
